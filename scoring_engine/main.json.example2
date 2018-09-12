@@ -1,0 +1,24 @@
+{
+  "name": "Testing",
+  "logging": "DEBUG",
+  "timeframe": {
+    "hours": "0",
+    "minutes": "1"
+  },
+  "services": {
+    "dns": {
+      "enabled": "1",
+      "servers": {
+        "main": "8.8.8.8",
+        "secondary": "8.8.4.4"
+      },
+      "hostnames": {
+        "wcsc.usf.edu": "131.247.1.113",
+        "webcse.csee.usf.edu": "131.247.3.5"
+      }
+    },
+    "random": {
+      "enabled": "1"
+    }
+  }
+}

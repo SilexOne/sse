@@ -1,0 +1,12 @@
+<html>
+   <body>
+   <form action = "{{ url_for('read_config') }}" method = "POST">
+   {% for item in result -%}
+       <p>{{ ' '.join(item.name.split('_')) }}: <input type = "text" name = "{{ item.name }}" value="{{ item.value }}"/></p>
+
+    {%- endfor %}
+              <p><input type = "submit" value = "Submit" /></p>
+      </form>
+      </body>
+</html>
+

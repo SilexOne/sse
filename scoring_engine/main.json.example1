@@ -1,0 +1,54 @@
+{
+  "name": "production",
+  "logging": "INFO",
+  "timeframe": {
+    "hours": "0",
+    "minutes": "1"
+  },
+  "services": {
+    "dns": {
+      "enabled": "0",
+      "servers": {
+        "main": "172.20.240.23",
+        "secondary": "172.20.241.27"
+      },
+      "hostnames": {
+        "win.wcsc.com": "172.20.1.3",
+        "dns.wcsc.com": "172.20.240.23",
+        "ecomm.wcsc.com": "172.20.240.11",
+        "email.wcsc.com": "172.20.241.39",
+        "ftp.wcsc.com": "172.20.241.9",
+        "webapps.wcsc.com": "172.20.241.3",
+        "ad.wcsc.com": "172.20.241.27",
+        "mgmt.wcsc.com": "172.20.241.100"
+      }
+    },
+    "ad": {
+      "enabled": "0"
+    },
+    "http": {
+      "enabled": "0"
+    },
+    "https": {
+      "enabled": "0"
+    },
+    "webmail-http": {
+      "enabled": "0"
+    },
+    "smtp": {
+      "enabled": "0"
+    },
+    "pop3": {
+      "enabled": "0"
+    },
+    "imap": {
+      "enabled": "0"
+    },
+    "ftp": {
+      "enabled": "0"
+    },
+    "sql": {
+      "enabled": "0"
+    }
+  }
+}

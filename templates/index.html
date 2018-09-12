@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static', filename='styles/style.css') }}">
+<script src="{{ url_for('static', filename='jquery.min.js') }}"></script>
+<script>
+var VALUE_TO_COLOR = {
+    '1': 'green',
+    '0': 'red'
+};
+var DEFAULT_COLOR = 'blue';
+var firstRun = true;
+
+function drawResults(results) {
+    $.each(results, function(name, value){
+        var id = name.replace(/ /g, '_');
+        var container = $('#' + id);
+        if (container.length < 1) {
+            container = $('<tr/>')
+                .attr('id', id)
+                .appendTo('#scoreboard');
+        }
+        container.empty();
+
+        var ledClass = 'led led-' + (VALUE_TO_COLOR[value] || DEFAULT_COLOR);
+        container
+            .append($('<td class="led-label"></td>').text(name + ': '))
+            .append($('<td/>').append($('<span/>').addClass(ledClass)));
+    });
+}
+
+function getStatus() {
+    $.getJSON("/api/services/status", function(results) {
+        if (firstRun) {
+            firstRun = false;
+            // Clear the loading text
+            $('#scoreboard').empty();
+        }
+
+        drawResults(results);
+    });
+}
+
+$(function() {
+    window.getStatusInterval = setInterval(getStatus, 1000);
+});
+
+</script>
+</head>
+<body>
+
+<a href="{{ url_for('config') }}">Configuration Page</a>
+
+<table id="scoreboard">
+    <tr>
+        <td>Loading...</td>
+    </tr>
+</table>
+
+<form action="{{ url_for('start_scoring_engine') }}" method="post">
+    <p><input type="submit" value="Start Scoring" /></p>
+</form>
+
+</body>
+</html>
