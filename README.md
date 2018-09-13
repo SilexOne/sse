@@ -2,11 +2,21 @@
 - Proper logging
 - Logging to WEB UI
 - Global Variables like scoring, and data. Better way?
-- having two programs use a database and know the location
+- having two programs use a database and know the location?
+- Display timer
+- Indicate end of scoring
+- Update scoreboard, scoreboard still there when db is gone
+- Once running gray out option, enable a terminate button
+- Use a database to store the boolean buttons enabled/disabled or pass it?
+- Importing is crazy??? Help!
+- Pass the scoring_engine var through the routes?
+- Threading on service tests
 
 # Service Scoring Engine
 #### Table
 [Summary](#summary)
+
+[Requirements](#requirements)
 
 [Setup](#setup)
 
@@ -18,27 +28,39 @@
 ### Summary
 A python 3 program used to test various service uptimes for a given network infrastructure. 
 
+<a id="requirements"></a>
+### Requirements
+- Create an Ubuntu 16.04LTS outside of the firewall. An example would be the `172.31.XX.0/29` subnet on the figure below.
+- Ensure the Ubuntu 16.04LTS has internet access.
+- Setup the SSE on a Ubuntu 16.04LTS system.
+<center>
+    <figure>
+        <img src="static\2017Topology.png" style="border: 1px solid #000">
+        <figcaption><center>Southeast Regional Cyber Defense Qualification Network Infrastructurey</center></figcaption>
+    </figure>
+</center>
+
 <a id="setup"></a>
 ### Setup
 1. Git clone this repository:
-    - `git clone https://github.com/SilexOne/ise.git`
+    - `git clone https://github.com/SilexOne/sse.git`
 2. Run the install script:
     - `./sse_setup.sh`
 3. Configure the JSON file to your network:
-    - The `main.json` chooses if your testing or actually scoring your services and enables which ones you want to use.
+    - Edit `scoring_engine/main.json`, see [Usage](#usage) for more details
 4. Run the program:
     - `python main.py`
 5. View the website:
-    - Browse to the machine that is hosting the SSE `http://#.#.#.#`.
+    - Browse to the machine that is hosting the SSE `http://#.#.#.#`
     
 <a id="usage"></a>
 ### Usage
-1. Once installed you will need to make and configure a `main.json` file. A template is already provided as `main.json.example#`, you may make a copy of `main.json.example1` as `main.json`.
+1. Once installed you will need to make and configure a `scoring_engine/main.json` file. A template is already provided as `main.json.example#`, you may make a copy of `main.json.example1` as `main.json`.
     
 2. View the mode's overall settings and configure if needed:
     - `logging`: This sets the logging level for SSE and how verbose the output is. It follows Python logging standard.
     - `timeframe`: This sets how long SSE will score for
-    - `services`: This will hold all the service settings that `services` will use.
+    - `services`: This will hold all the service settings that `scoring_engine/services` will use.
     ```
      {
         "name": "testing",
@@ -88,7 +110,7 @@ A python 3 program used to test various service uptimes for a given network infr
 ### Contributing
 ##### Service Test
 If you want to test another service that isn't in SSE by default you can easily add one yourself.
-1. Within `main.json` add a service in `services` with the appropriate settings in both modes.
+1. Within `scoring_engine/main.json` add a service in `services` with the appropriate settings in both modes.
     ```
     {
         "name": "production",
@@ -109,13 +131,13 @@ If you want to test another service that isn't in SSE by default you can easily 
     }
     ```
 
-2. Create a python file based off `services/template.py` and store it in the `services` folder.
+2. Create a python file based off `scoring_engine/services/template.py` and store it in the `scoring_engine/services` folder.
     - Follow the template guidelines
     - Import the necessary libraries, `from utils.settings import data, collect`
     - Ensure the decorator is on your function, `@collect(data.get('services').get('YOUR_SERVICE_NAME_YOU_CREATED_IN_THE_JSON_FILE').get('enabled'))`
     - Use the settings from the json to test your service, This will be passed in as a parameter `def A_NAME_THAT_PERTAINS_TO_YOUR_SERVICE_TEST(config):`, then can be used as so `service_settings = config.get('services').get('YOUR_SERVICE_NAME_YOU_CREATED_IN_THE_JSON_FILE')`
     - Return either a 1 or 0 which represent PASS/FAIL
-    - Look at existing scoring functions in `services` to get real examples
+    - Look at existing scoring functions in `scoring_engine/services` to get real examples
     
 3. Run the program and the service should be added.
     
@@ -124,14 +146,14 @@ If you want to test another service that isn't in SSE by default you can easily 
 2.  Git clone the repository.
 
     ```bash
-    $ git clone git@github.com:<YOUR_USERNAME_FOR_GITHUB>/ise.git
+    $ git clone git@github.com:<YOUR_USERNAME_FOR_GITHUB>/sse.git
     ```
  
 3.  Set the upstream repository.
 
     ```bash
     # Sets your git project upstream to this repository
-    $ git remote add upstream https://github.com/SilexOne/ise.git
+    $ git remote add upstream https://github.com/SilexOne/sse.git
     ```
 
 4. Ensure your fork's master mirrors the upstream repository. 

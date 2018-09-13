@@ -3,8 +3,9 @@ import shutil
 import logging
 import sqlite3
 from datetime import datetime
-from os.path import join, dirname, realpath
+from os.path import join, dirname
 from settings import DATABASE_NAME
+
 
 class SqliteDatabase:
 

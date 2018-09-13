@@ -5,23 +5,22 @@ import sqlite3
 from subprocess import Popen
 from flatten_json import flatten_json, unflatten
 from flask import Flask, render_template, jsonify, request, redirect, url_for
-from settings import CONFIG_LOCATION, PYTHON_ENV, SCORING_ENGINE_LOCATION, DATABASE_LOCATION
+from settings import (CONFIG_LOCATION, PYTHON_ENV, SCORING_ENGINE_LOCATION,
+                      DATABASE_LOCATION)
 
 import logging
-logging.getLogger("werkzeug").setLevel(logging.WARNING)  # Not to flood the terminal messages
+# Not to flood the terminal messages
+logging.getLogger("werkzeug").setLevel(logging.WARNING)
 app = Flask(__name__)
 
 
 @app.route('/')
 def scoreboard():
-    # TODO: Display timer
-    # TODO: Indicate end of scoring
-    # TODO: Update scoreboard, scoreboard still there when db is gone
     return render_template("index.html")
 
 
 @app.route('/config')
-def config():
+def config_display():
     config = read_config().json
     return render_template('config.html', result=config)
 
@@ -48,11 +47,9 @@ def read_config():
 @app.route('/api/engine', methods=['POST', 'GET'])
 def start_scoring_engine():
     if request.method == 'POST':
-        # TODO: Once running gray out option, enable a terminate button
-        # TODO: Use a database to store the boolean buttons enabled/disabled or pass it?
-        # TODO: Importing is crazy??? Help!
         scoring_engine = Popen([PYTHON_ENV, SCORING_ENGINE_LOCATION],
-                                stdout=sys.stdout, stderr=sys.stderr, env=os.environ)
+                               stdout=sys.stdout, stderr=sys.stderr,
+                               env=os.environ)
         return redirect(url_for('scoreboard'))
     elif request.method == 'GET':
         return ''
@@ -111,7 +108,9 @@ def query_table_last_entry(tablename):
             cursor = connection.cursor()
             cursor.execute("SELECT * FROM {}".format(tablename))
             all_rows = cursor.fetchall()
-            last_entry = '{0} | {1} | {2}'.format(all_rows[-1][0], all_rows[-1][1], all_rows[-1][2])
+            last_entry = '{0} | {1} | {2}'.format(all_rows[-1][0],
+                                                  all_rows[-1][1],
+                                                  all_rows[-1][2])
             return str(last_entry)
         except Exception as e:
             return str(e)
