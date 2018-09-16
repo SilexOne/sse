@@ -7,32 +7,45 @@ from os.path import join, dirname
 from settings import DATABASE_NAME
 
 
+# TODO: Ran into sqlite3.OperationalError: database is locked, seems Sqlite3 is not good enough
+# TODO: https://stackoverflow.com/questions/3172929/operationalerror-database-is-locked/3172950
 class SqliteDatabase:
+    # Get the file path and also make a backup file path if it's needed
+    dir_path = dirname(__file__)
+    abs_path = join(dir_path, DATABASE_NAME)
+    new_abs_file_path = join(join(dirname(dir_path), "backup"),
+                                  str(datetime.now().strftime('%Y-%m-%dT%H-%M-%S') + '.db'))
 
-    def __init__(self):
+    def __init__(self, name):
+        self.connection = None
+        self.cursor = None
+        self.name = name
+
+    def check_previous(self):
+        """
+        Move the database into the backup folder if sse.db already exist
+
+        """
+        try:
+            shutil.move(self.abs_path, self.new_abs_file_path)
+        except OSError:
+            pass
+
+    def db_connection(self):
         """
         This class initializes a SQLite3 database while moving any
         database named sse.db to a backup folder and stores the connection
         into the class attributes
         """
-        # Get the file path and also make a backup file path if it's needed
-        self.dir_path = dirname(__file__)
-        self.abs_path = join(self.dir_path, DATABASE_NAME)
-        self.new_abs_file_path = join(join(dirname(self.dir_path), "backup"),
-                                      str(datetime.now().strftime('%Y-%m-%dT%H-%M-%S') + '.db'))
-
-        # Move the database into the backup folder if sse.db already exist, and make a new database
-        try:
-            shutil.move(self.abs_path, self.new_abs_file_path)
-        except OSError:
-            pass
         try:
             self.connection = sqlite3.connect(self.abs_path)
             self.cursor = self.connection.cursor()
+            logging.info("{} connected to {}".format(self.name, DATABASE_NAME))
         except Exception as e:
-            logging.exception("Failed to make a connection to the database: e".format(e))
+            logging.exception("Failed to make a connection to the database: {}".format(e))
             sys.exit(1)
-        logging.info("The database sse.db was created")
+
+
 
     def init_table(self, service):
         """
@@ -101,11 +114,11 @@ class SqliteDatabase:
             all_rows = self.cursor.fetchall()
             print('{0} | {1} | {2}'.format(all_rows[-1][0], all_rows[-1][1], all_rows[-1][2]))
         except Exception as e:
-            logging.exception("Unable to SELECT * FROM {}: e".format(service, e))
+            logging.exception("Unable to SELECT * FROM {}: {}".format(service, e))
 
     def close_db(self):
         self.connection.close()
-        logging.info("Database connection closed")
+        logging.info("{} connection was closed to {}".format(self.name, DATABASE_NAME))
         try:
             shutil.move(self.abs_path, self.new_abs_file_path)
         except OSError:

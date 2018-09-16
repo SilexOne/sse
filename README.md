@@ -2,15 +2,13 @@
 - Proper logging
 - Logging to WEB UI
 - Global Variables like scoring, and data. Better way?
-- having two programs use a database and know the location?
 - Display timer
 - Indicate end of scoring
 - Update scoreboard, scoreboard still there when db is gone
 - Once running gray out option, enable a terminate button
 - Use a database to store the boolean buttons enabled/disabled or pass it?
-- Importing is crazy??? Help!
+- Importing is crazy!
 - Pass the scoring_engine var through the routes?
-- Threading on service tests
 
 # Service Scoring Engine
 #### Table
