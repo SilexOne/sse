@@ -9,8 +9,7 @@ from settings import (CONFIG_LOCATION, PYTHON_ENV, SCORING_ENGINE_LOCATION,
                       DATABASE_LOCATION)
 
 import logging
-# Not to flood the terminal messages
-logging.getLogger("werkzeug").setLevel(logging.WARNING)
+logging.getLogger("werkzeug").setLevel(logging.WARNING)  # Stop the flood of messages
 app = Flask(__name__)
 
 
@@ -21,7 +20,15 @@ def scoreboard():
 
 @app.route('/config')
 def config_display():
-    config = read_config().json
+    try:
+        config = read_config().json
+    except AttributeError as e:
+        # TODO: Use a page to collect errors
+        return "scoring_engine/main.json ran into an error when being convert to JSON. Check " \
+               "to see if main.json exist and if it has the correct syntax. Error message: " \
+               "{}".format(e)
+    except Exception as e:
+        return str(e)
     return render_template('config.html', result=config)
 
 
@@ -34,7 +41,8 @@ def read_config():
         except Exception as e:
             return str(e)
         flat_json = [{'name': k, 'value': v} for k, v in flatten_json(config).items()]
-        return jsonify(flat_json)
+        sorted_flat_json = sorted(flat_json, key=lambda k: k['name'])
+        return jsonify(sorted_flat_json)
     elif request.method == 'POST':
         result = request.form
         result = unflatten(result)

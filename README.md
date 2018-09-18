@@ -1,4 +1,7 @@
 #### TODO:
+- pycharm is cool with imports but it doesnt work on other systems, think about the database option
+- Display config page just like .json file
+- Display error if no main.json found
 - Proper logging
 - Logging to WEB UI
 - Global Variables like scoring, and data. Better way?
@@ -31,12 +34,10 @@ A python 3 program used to test various service uptimes for a given network infr
 - Create an Ubuntu 16.04LTS outside of the firewall. An example would be the `172.31.XX.0/29` subnet on the figure below.
 - Ensure the Ubuntu 16.04LTS has internet access.
 - Setup the SSE on a Ubuntu 16.04LTS system.
-<center>
-    <figure>
-        <img src="static\2017Topology.png" style="border: 1px solid #000">
-        <figcaption><center>Southeast Regional Cyber Defense Qualification Network Infrastructurey</center></figcaption>
-    </figure>
-</center>
+<figure>
+    <img src="static\2017Topology.png" style="border: 1px solid #000">
+    <figcaption><center>Southeast Regional Cyber Defense Qualification Network Infrastructure</center></figcaption>
+</figure>
 
 <a id="setup"></a>
 ### Setup
@@ -47,7 +48,7 @@ A python 3 program used to test various service uptimes for a given network infr
 3. Configure the JSON file to your network:
     - Edit `scoring_engine/main.json`, see [Usage](#usage) for more details
 4. Run the program:
-    - `python main.py`
+    - `python3 main.py`
 5. View the website:
     - Browse to the machine that is hosting the SSE `http://#.#.#.#`
     
