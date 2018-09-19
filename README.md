@@ -1,17 +1,17 @@
 #### TODO:
-- pycharm is cool with imports but it doesnt work on other systems, think about the database option
+- Have a refresh on scoring engine variables from main.json
 - Display config page just like .json file
+- Use flask custom error pages
 - Display error if no main.json found
 - Proper logging
 - Logging to WEB UI
-- Global Variables like scoring, and data. Better way?
 - Display timer
 - Indicate end of scoring
 - Update scoreboard, scoreboard still there when db is gone
 - Once running gray out option, enable a terminate button
-- Use a database to store the boolean buttons enabled/disabled or pass it?
-- Importing is crazy!
 - Pass the scoring_engine var through the routes?
+- Use a better database
+- cause errors then catch them
 
 # Service Scoring Engine
 #### Table

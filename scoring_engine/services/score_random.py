@@ -1,5 +1,5 @@
 import random
-from utils.settings import data, collect
+from ..utils.settings import data, collect
 
 
 @collect(data.get('services').get('random').get('enabled'))

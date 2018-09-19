@@ -1,6 +1,6 @@
 import sys
 import logging
-from utils.settings import data
+from .settings import data
 
 # Set the logging settings
 formatting = '%(asctime)s [%(levelname)s]: %(message)s'

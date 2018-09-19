@@ -1,14 +1,12 @@
-import os
-import sys
 import json
 import sqlite3
-from subprocess import Popen
+import logging
+import multiprocessing as mp
 from flatten_json import flatten_json, unflatten
 from flask import Flask, render_template, jsonify, request, redirect, url_for
-from settings import (CONFIG_LOCATION, PYTHON_ENV, SCORING_ENGINE_LOCATION,
-                      DATABASE_LOCATION)
+from settings import CONFIG_LOCATION, DATABASE_LOCATION
+from scoring_engine.scoring_engine_main import run_engine
 
-import logging
 logging.getLogger("werkzeug").setLevel(logging.WARNING)  # Stop the flood of messages
 app = Flask(__name__)
 
@@ -21,14 +19,16 @@ def scoreboard():
 @app.route('/config')
 def config_display():
     try:
-        config = read_config().json
-    except AttributeError as e:
-        # TODO: Use a page to collect errors
-        return "scoring_engine/main.json ran into an error when being convert to JSON. Check " \
-               "to see if main.json exist and if it has the correct syntax. Error message: " \
-               "{}".format(e)
+        with open(CONFIG_LOCATION, 'r') as f:
+            config = json.load(f)
     except Exception as e:
-        return str(e)
+        return render_template('error.html', error=e)
+    try:
+        flat_json = [{'name': k, 'value': v} for k, v in flatten_json(config).items()]
+        sorted_flat_json = sorted(flat_json, key=lambda k: k['name'])
+        config = sorted_flat_json
+    except Exception as e:
+        return render_template('error.html', error=e)
     return render_template('config.html', result=config)
 
 
@@ -39,15 +39,16 @@ def read_config():
             with open(CONFIG_LOCATION, 'r') as f:
                 config = json.load(f)
         except Exception as e:
-            return str(e)
-        flat_json = [{'name': k, 'value': v} for k, v in flatten_json(config).items()]
-        sorted_flat_json = sorted(flat_json, key=lambda k: k['name'])
-        return jsonify(sorted_flat_json)
+            return render_template('error.html', error=e)
+        return jsonify(config)
     elif request.method == 'POST':
         result = request.form
         result = unflatten(result)
-        with open(CONFIG_LOCATION, 'w') as f:
-            json.dump(result, f, indent=4)
+        try:
+            with open(CONFIG_LOCATION, 'w') as f:
+                json.dump(result, f, indent=4)
+        except Exception as e:
+            return render_template('error.html', error=e)
 
         return redirect(url_for('scoreboard'))
 
@@ -55,9 +56,8 @@ def read_config():
 @app.route('/api/engine', methods=['POST', 'GET'])
 def start_scoring_engine():
     if request.method == 'POST':
-        scoring_engine = Popen([PYTHON_ENV, SCORING_ENGINE_LOCATION],
-                               stdout=sys.stdout, stderr=sys.stderr,
-                               env=os.environ)
+        scoring_process = mp.Process(target=run_engine)
+        scoring_process.start()
         return redirect(url_for('scoreboard'))
     elif request.method == 'GET':
         return ''
@@ -79,7 +79,7 @@ def score_board():
                 services_last_status[table_name] = last_entry_status
             return jsonify(services_last_status)
         except Exception as e:
-            return str(e)
+            return render_template('error.html', error=e)
 
 
 @app.route('/api/tables')
@@ -106,7 +106,7 @@ def query_table(tablename):
                 response += '{0} | {1} | {2}<br/>'.format(row[0], row[1], row[2])
             return str(response)
         except Exception as e:
-            return str(e)
+            return render_template('error.html', error=e)
 
 
 @app.route('/api/tables/last/<tablename>')
@@ -121,7 +121,7 @@ def query_table_last_entry(tablename):
                                                   all_rows[-1][2])
             return str(last_entry)
         except Exception as e:
-            return str(e)
+            return render_template('error.html', error=e)
 
 
 if __name__ == '__main__':

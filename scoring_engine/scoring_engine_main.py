@@ -1,19 +1,18 @@
-import os
 import json
 import time
 import threading
 from datetime import datetime, timedelta
-from database import sse_db
-from utils.sse_logging import logging
-from utils.settings import scoring, data
+from .database import sse_db
+from .utils.sse_logging import logging
+from .utils.settings import scoring, data
 from settings import CONFIG_LOCATION
-# This 'import services' calls the __init__.py in services and imports
+# The 'from . import services' calls the __init__.py in services and imports
 # everything in the directory which runs the decorators to collect all
 # the functions
-import services
+from . import services
 
 
-def main():
+def run_engine():
     logging.info("Service Scoring Engine started")
 
     # Using the json configuration settings from the global variable
@@ -22,7 +21,7 @@ def main():
 
     # Initialize a custom object and check if there is another database
     # then create a sqlite3 database
-    database = sse_db.SqliteDatabase(main.__name__)
+    database = sse_db.SqliteDatabase(__name__)
     database.check_previous()
     database.db_connection()
 
@@ -77,7 +76,3 @@ def test_service(finish_time, service):
                               "{}".format(service.__name__, e))
         time.sleep(5)
     database.close_db()
-
-
-if __name__ == '__main__':
-    main()

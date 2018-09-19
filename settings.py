@@ -10,5 +10,5 @@ CONFIG_DIR = dirname(scoring_engine.__file__)
 CONFIG_NAME = 'main.json'
 CONFIG_LOCATION = join(CONFIG_DIR, CONFIG_NAME)
 PYTHON_ENV = sys.executable
-SCORING_ENGINE = 'main.py'
+SCORING_ENGINE = 'scoring_engine_mainscoring_engine_main.py'
 SCORING_ENGINE_LOCATION = join(CONFIG_DIR, SCORING_ENGINE)
