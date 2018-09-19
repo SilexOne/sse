@@ -5,7 +5,6 @@ import multiprocessing as mp
 from flatten_json import flatten_json, unflatten
 from flask import Flask, render_template, jsonify, request, redirect, url_for
 from settings import CONFIG_LOCATION, DATABASE_LOCATION
-from scoring_engine.scoring_engine_main import run_engine
 
 logging.getLogger("werkzeug").setLevel(logging.WARNING)  # Stop the flood of messages
 app = Flask(__name__)
@@ -56,6 +55,7 @@ def read_config():
 @app.route('/api/engine', methods=['POST', 'GET'])
 def start_scoring_engine():
     if request.method == 'POST':
+        from scoring_engine.scoring_engine_main import run_engine
         scoring_process = mp.Process(target=run_engine)
         scoring_process.start()
         return redirect(url_for('scoreboard'))
@@ -125,4 +125,4 @@ def query_table_last_entry(tablename):
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='0.0.0.0')

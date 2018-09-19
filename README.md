@@ -43,13 +43,15 @@ A python 3 program used to test various service uptimes for a given network infr
 ### Setup
 1. Git clone this repository:
     - `git clone https://github.com/SilexOne/sse.git`
-2. Run the install script:
+2. Go into the projecy
+    - `cd sse`
+3. Run the install script:
     - `./sse_setup.sh`
-3. Configure the JSON file to your network:
+4. Configure the JSON file to your network:
     - Edit `scoring_engine/main.json`, see [Usage](#usage) for more details
-4. Run the program:
+5. Run the program:
     - `python3 main.py`
-5. View the website:
+6. View the website:
     - Browse to the machine that is hosting the SSE `http://#.#.#.#`
     
 <a id="usage"></a>
