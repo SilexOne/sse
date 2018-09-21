@@ -1,9 +1,10 @@
 import json
 import time
+import logging
 import threading
 from datetime import datetime, timedelta
 from .database import sse_db
-from .utils.sse_logging import logging
+from .utils import sse_logging
 from .utils.settings import scoring, data
 from settings import CONFIG_LOCATION
 # The 'from . import services' calls the __init__.py in services and imports

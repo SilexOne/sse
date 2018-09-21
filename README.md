@@ -2,8 +2,7 @@
 - Have a refresh on scoring engine variables from main.json
 - Display config page just like .json file
 - Use flask custom error pages
-- Display error if no main.json found
-- Proper logging
+- Proper logging, get rid of logging file
 - Logging to WEB UI
 - Display timer
 - Indicate end of scoring
@@ -12,7 +11,8 @@
 - Pass the scoring_engine var through the routes?
 - Use a better database
 - cause errors then catch them
-
+- Change main.json to config, also make it dynamic
+ 
 # Service Scoring Engine
 #### Table
 [Summary](#summary)

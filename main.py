@@ -4,11 +4,15 @@ import logging
 import multiprocessing as mp
 from flatten_json import flatten_json, unflatten
 from flask import Flask, render_template, jsonify, request, redirect, url_for
-from settings import CONFIG_LOCATION, DATABASE_LOCATION
+from flask_socketio import SocketIO, emit
+from settings import CONFIG_LOCATION, DATABASE_LOCATION, SCORING_LOG_LOCATION
 
 logging.getLogger("werkzeug").setLevel(logging.WARNING)  # Stop the flood of messages
-app = Flask(__name__)
 
+app = Flask(__name__)
+app.config['HOST'] = '0.0.0.0'  # TODO: Firgure out right way
+app.config['SECRET_KEY'] = 'securescoringlogging'
+socketio = SocketIO(app)
 
 @app.route('/')
 def scoreboard():
@@ -29,6 +33,21 @@ def config_display():
     except Exception as e:
         return render_template('error.html', error=e)
     return render_template('config.html', result=config)
+
+
+@app.route('/log')
+def log():
+    return render_template('log.html')
+
+
+@socketio.on('connect')
+def connect():
+    try:
+        with open(SCORING_LOG_LOCATION, 'r') as f:
+            log = f.read()
+            emit('message', log)
+    except Exception as e:
+        emit('message', e)
 
 
 @app.route('/api/config', methods=['POST', 'GET'])
@@ -55,8 +74,8 @@ def read_config():
 @app.route('/api/engine', methods=['POST', 'GET'])
 def start_scoring_engine():
     if request.method == 'POST':
-        from scoring_engine.scoring_engine_main import run_engine
-        scoring_process = mp.Process(target=run_engine)
+        from scoring_engine import scoring_engine_main
+        scoring_process = mp.Process(target=scoring_engine_main.run_engine)
         scoring_process.start()
         return redirect(url_for('scoreboard'))
     elif request.method == 'GET':
@@ -125,4 +144,4 @@ def query_table_last_entry(tablename):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+    socketio.run(app)
