@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% block head %}
+    <meta charset="utf-8">
+    <title>{% block title %}{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="static/bootstrap-3.3.7-dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="static/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='socket.io.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='jquery.min.js') }}"></script>
+    <style>body {
+        background-color: WhiteSmoke;
+    }</style>
+    {% block additional_head %}{% endblock %}
+    {% endblock %}
+</head>
+<body>
+{% set navigation_bar = [
+    ('/', 'scoreboard', 'Scoreboard'),
+    ('/config', 'config', 'Configuration Settings'),
+    ('#', 'instructions', 'Instructions'),
+    ('/log', 'log', 'Logging Status')
+] -%}
+{% set active_page = active_page|default('scoreboard') -%}
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand">WCSC Scoring Engine</a>
+        </div>
+        <ul class="nav navbar-nav">
+
+            {% for href, id, caption in navigation_bar %}
+            <li{% if id == active_page %} class="active"{% endif %}><a href="{{ href }}">{{ caption }}</a></li>
+            {% endfor %}
+
+        </ul>
+    </div>
+</nav>
+<div style="margin-top:70px">
+    {% block content %}{% endblock %}
+</div>
+</body>
+</html>

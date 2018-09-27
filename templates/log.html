@@ -1,20 +1,23 @@
-<html>
-    <head>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-      <script type="text/javascript" charset="utf-8">
-            var socket = io.connect('http://' + document.domain + ':' + location.port);
-            socket.on('connect', function() {
-                 console.log('connected');
-            });
-            socket.on('message', function(data) {
-                 $("#log").html(data.replace(/\n/g, "<br>"));
-                 console.log(data);
-            });
-      </script>
-    </head>
-    <body>
-    <p>Scoring Engine Log:</p>
+{% extends "base.html" %}
+{% block title %}Logging Status{% endblock %}
+{% block additional_head %}
+<script type="text/javascript" charset="utf-8">
+namespace = '/status';
+var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+socket.on('connect', function() {
+     console.log('connected');
+});
+socket.on('test', function(data) {
+     $("#log").html(data);
+     console.log(data);
+});
+socket.on('message', function(data) {
+     $("#log").html(data.replace(/\n/g, "<br>"));
+     console.log(data);
+});
+</script>
+{% endblock %}
+{% set active_page = "log" %}
+{% block content %}
     <ul id="log"></ul>
-    </body>
-</html>
+{% endblock %}

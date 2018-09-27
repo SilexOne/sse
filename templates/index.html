@@ -1,8 +1,7 @@
-<!DOCTYPE html>
-<html>
-<head>
+{% extends "base.html" %}
+{% block title %}Scoreboard{% endblock %}
+{% block additional_head %}
     <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static', filename='styles/style.css') }}">
-<script src="{{ url_for('static', filename='jquery.min.js') }}"></script>
 <script>
 var VALUE_TO_COLOR = {
     '1': 'green',
@@ -46,20 +45,15 @@ $(function() {
 });
 
 </script>
-</head>
-<body>
-
-<a href="{{ url_for('config_display') }}">Configuration Page</a>
-
-<table id="scoreboard">
-    <tr>
-        <td>Loading...</td>
-    </tr>
-</table>
-
-<form action="{{ url_for('start_scoring_engine') }}" method="post">
-    <p><input type="submit" value="Start Scoring" /></p>
-</form>
-<a href="{{ url_for('log') }}">Logs</a>
-</body>
-</html>
+{% endblock %}
+{% set active_page = "scoreboard" %}
+{% block content %}
+    <table id="scoreboard">
+        <tr>
+            <td>Loading...</td>
+        </tr>
+    </table>
+    <form action="{{ url_for('start_scoring_engine') }}" method="post">
+        <p><input type="submit" value="Start Scoring" /></p>
+    </form>
+{% endblock %}

@@ -1,18 +1,53 @@
+import sys
 import json
 import sqlite3
 import logging
+try:
+    pass
+    #import inotify.adapters
+except AttributeError:
+    logging.exception('inotify may only be ran on Linux. Windows and MacOS will not work')
+    sys.exit(1)
 import multiprocessing as mp
+from threading import Lock
 from flatten_json import flatten_json, unflatten
 from flask import Flask, render_template, jsonify, request, redirect, url_for
 from flask_socketio import SocketIO, emit
 from settings import CONFIG_LOCATION, DATABASE_LOCATION, SCORING_LOG_LOCATION
 
-logging.getLogger("werkzeug").setLevel(logging.WARNING)  # Stop the flood of messages
+# Stop the flood of messages
+logging.getLogger("werkzeug").setLevel(logging.WARNING)
+logging.getLogger("inotify").setLevel(logging.WARNING)
 
 app = Flask(__name__)
-app.config['HOST'] = '0.0.0.0'  # TODO: Firgure out right way
-app.config['SECRET_KEY'] = 'securescoringlogging'
+app.config['SECRET_KEY'] = 'securescoring'
 socketio = SocketIO(app)
+
+log_thread = None
+log_thread_lock = Lock()
+def log_status():
+    count = 0
+    while True:
+        socketio.sleep(1)
+        count += 1
+        socketio.emit('test', str(count), namespace='/status')
+"""
+    i = inotify.adapters.Inotify()
+    from os.path import dirname, join
+    i.add_watch(join(dirname(__file__), 'status'))
+    for event in i.event_gen(yield_nones=False):
+        (_, type_names, path, filename) = event
+        print("PATH=[{}] FILENAME=[{}] EVENT_TYPES={}".format(
+              path, filename, type_names))    
+        try:
+            with open(SCORING_LOG_LOCATION, 'r') as f:
+                log_file = f.read()
+                emit('message', log_file)
+        except Exception as e:
+            emit('message', e)
+    
+"""
+
 
 @app.route('/')
 def scoreboard():
@@ -40,14 +75,12 @@ def log():
     return render_template('log.html')
 
 
-@socketio.on('connect')
+@socketio.on('connect', namespace='/status')
 def connect():
-    try:
-        with open(SCORING_LOG_LOCATION, 'r') as f:
-            log = f.read()
-            emit('message', log)
-    except Exception as e:
-        emit('message', e)
+    global log_thread
+    with log_thread_lock:
+        if log_thread is None:
+            log_thread = socketio.start_background_task(target=log_status)
 
 
 @app.route('/api/config', methods=['POST', 'GET'])
@@ -101,47 +134,5 @@ def score_board():
             return render_template('error.html', error=e)
 
 
-@app.route('/api/tables')
-def list_tables():
-    tables = []
-    with sqlite3.connect(DATABASE_LOCATION) as connection:
-        cursor = connection.cursor()
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-        response = cursor.fetchall()
-        for table in response:
-            tables.append(table[0])
-        return str(tables)
-
-
-@app.route('/api/tables/<tablename>')
-def query_table(tablename):
-    response = ''
-    with sqlite3.connect(DATABASE_LOCATION) as connection:
-        try:
-            cursor = connection.cursor()
-            cursor.execute("SELECT * FROM {}".format(tablename))
-            all_rows = cursor.fetchall()
-            for row in all_rows:
-                response += '{0} | {1} | {2}<br/>'.format(row[0], row[1], row[2])
-            return str(response)
-        except Exception as e:
-            return render_template('error.html', error=e)
-
-
-@app.route('/api/tables/last/<tablename>')
-def query_table_last_entry(tablename):
-    with sqlite3.connect(DATABASE_LOCATION) as connection:
-        try:
-            cursor = connection.cursor()
-            cursor.execute("SELECT * FROM {}".format(tablename))
-            all_rows = cursor.fetchall()
-            last_entry = '{0} | {1} | {2}'.format(all_rows[-1][0],
-                                                  all_rows[-1][1],
-                                                  all_rows[-1][2])
-            return str(last_entry)
-        except Exception as e:
-            return render_template('error.html', error=e)
-
-
 if __name__ == '__main__':
-    socketio.run(app)
+    socketio.run(app, host='0.0.0.0')

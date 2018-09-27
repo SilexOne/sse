@@ -1,7 +1,5 @@
-<html>
-   <body>
-          <p>{{ error }}
-          <p><a href="{{ url_for('scoreboard') }}">Homepage</a>
-      </body>
-</html>
-
+{% extends "base.html" %}
+{% block title %}Unexpected Error{% endblock %}
+{% block content %}
+    <p>{{ error }}</p>
+{% endblock %}

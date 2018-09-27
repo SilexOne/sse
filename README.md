@@ -1,4 +1,6 @@
 #### TODO:
+- url_for doesn't work in navigation_bar for base.html, also when using / on the backend of routes bootstrap stops working
+- Find a dynamic way to list nav links, Does nav link need active on current page?
 - Have a refresh on scoring engine variables from main.json
 - Display config page just like .json file
 - Use flask custom error pages

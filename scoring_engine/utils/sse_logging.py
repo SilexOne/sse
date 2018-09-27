@@ -14,6 +14,7 @@ if data.get('logging') not in ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']:
                   "\nCRITICAL")
     sys.exit(1)
 level = logging.getLevelName(data.get('logging'))
+# TODO: Make dynamic
 file_handler = logging.FileHandler('scoring.log', mode='w')
 stdout_handler = logging.StreamHandler(sys.stdout)
 logging.basicConfig(format=formatting, level=level, handlers=[file_handler, stdout_handler])
