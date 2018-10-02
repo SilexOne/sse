@@ -19,7 +19,7 @@
 {% set navigation_bar = [
     ('/', 'scoreboard', 'Scoreboard'),
     ('/config', 'config', 'Configuration Settings'),
-    ('#', 'instructions', 'Instructions'),
+    ('/instructions', 'instructions', 'Instructions'),
     ('/log', 'log', 'Logging Status')
 ] -%}
 {% set active_page = active_page|default('scoreboard') -%}
@@ -29,11 +29,9 @@
             <a class="navbar-brand">WCSC Scoring Engine</a>
         </div>
         <ul class="nav navbar-nav">
-
             {% for href, id, caption in navigation_bar %}
             <li{% if id == active_page %} class="active"{% endif %}><a href="{{ href }}">{{ caption }}</a></li>
             {% endfor %}
-
         </ul>
     </div>
 </nav>

@@ -1,15 +1,11 @@
-import sys
 import json
 import sqlite3
 import logging
-try:
-    pass
-    #import inotify.adapters
-except AttributeError:
-    logging.exception('inotify may only be ran on Linux. Windows and MacOS will not work')
-    sys.exit(1)
 import multiprocessing as mp
+from os.path import abspath, dirname
 from threading import Lock
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 from flatten_json import flatten_json, unflatten
 from flask import Flask, render_template, jsonify, request, redirect, url_for
 from flask_socketio import SocketIO, emit
@@ -23,30 +19,40 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'securescoring'
 socketio = SocketIO(app)
 
+scoring_status_thread = None
+scoring_status_thread_lock = Lock()
+def scoring_status(scoring_process):
+    is_alive = scoring_process.is_alive()
+    while is_alive:
+        socketio.sleep(1)
+        is_alive = scoring_process.is_alive()
+
+
+class Handler(FileSystemEventHandler):
+    def on_modified(self, event):
+        if event.src_path.endswith('scoring.log'):
+            try:
+                with open(SCORING_LOG_LOCATION, 'r') as f:
+                    log_file = f.read()
+                    socketio.emit('message', log_file, namespace='/status')
+            except Exception as e:
+                socketio.emit('message', e, namespace='/status')
+            socketio.sleep(1)
+
+
 log_thread = None
 log_thread_lock = Lock()
 def log_status():
-    count = 0
-    while True:
-        socketio.sleep(1)
-        count += 1
-        socketio.emit('test', str(count), namespace='/status')
-"""
-    i = inotify.adapters.Inotify()
-    from os.path import dirname, join
-    i.add_watch(join(dirname(__file__), 'status'))
-    for event in i.event_gen(yield_nones=False):
-        (_, type_names, path, filename) = event
-        print("PATH=[{}] FILENAME=[{}] EVENT_TYPES={}".format(
-              path, filename, type_names))    
-        try:
-            with open(SCORING_LOG_LOCATION, 'r') as f:
-                log_file = f.read()
-                emit('message', log_file)
-        except Exception as e:
-            emit('message', e)
-    
-"""
+    event_handler = Handler()
+    observer = Observer()
+    observer.schedule(event_handler, dirname(abspath(__file__)))
+    observer.start()
+    try:
+        while True:
+            socketio.sleep(1)
+    except KeyboardInterrupt:
+        observer.stop()
+    observer.join()
 
 
 @app.route('/')
@@ -75,8 +81,43 @@ def log():
     return render_template('log.html')
 
 
+@app.route('/instructions')
+def instructions():
+    return render_template('instructions.html')
+
+
+@socketio.on('start_scoring_engine', namespace='/scoring')
+def start_scoring_engine():
+    from scoring_engine import scoring_engine_main
+    global scoring_process
+    scoring_process = mp.Process(target=scoring_engine_main.run_engine)
+    scoring_process.start()
+    global scoring_status_thread
+    with scoring_status_thread_lock:
+        if scoring_status_thread is None:
+            scoring_status_thread = socketio.start_background_task(scoring_status, scoring_process)
+
+
+@socketio.on('stop_scoring_engine', namespace='/scoring')
+def stop_scoring_engine():
+    try:
+        scoring_process.terminate()
+        with scoring_status_thread_lock:
+            scoring_status_thread = None
+        logging.info('Scoring Engine was forcibly terminated')
+    except NameError:
+        logging.warning('No Scoring Engine Process found')
+    except Exception:
+        logging.exception('Scoring Engine was unable to be forcibly terminated')
+
 @socketio.on('connect', namespace='/status')
 def connect():
+    try:
+        with open(SCORING_LOG_LOCATION, 'r') as f:
+            log_file = f.read()
+            emit('init', log_file)
+    except Exception as e:
+        emit('init', e)
     global log_thread
     with log_thread_lock:
         if log_thread is None:
@@ -102,17 +143,6 @@ def read_config():
             return render_template('error.html', error=e)
 
         return redirect(url_for('scoreboard'))
-
-
-@app.route('/api/engine', methods=['POST', 'GET'])
-def start_scoring_engine():
-    if request.method == 'POST':
-        from scoring_engine import scoring_engine_main
-        scoring_process = mp.Process(target=scoring_engine_main.run_engine)
-        scoring_process.start()
-        return redirect(url_for('scoreboard'))
-    elif request.method == 'GET':
-        return ''
 
 
 @app.route('/api/services/status')

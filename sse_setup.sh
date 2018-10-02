@@ -2,7 +2,14 @@
 
 
 # TODO: Create status/check command
-
+check_command(){
+    eval $@
+    LAST_RETURN_CODE=$?
+    if [ $LAST_RETURN_CODE != 0 ]; then
+        echo "$@ exited with return code $LAST_RETURN_CODE" >&2
+        exit $LAST_RETURN_CODE
+    fi
+}
 
 sudo apt update
 sudo apt upgrade -y

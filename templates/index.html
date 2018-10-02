@@ -44,6 +44,20 @@ $(function() {
     window.getStatusInterval = setInterval(getStatus, 1000);
 });
 
+namespace = '/scoring';
+var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+socket.on('test', function(data) {
+     console.log(data);
+});
+
+function startScoring() {
+    socket.emit('start_scoring_engine');
+}
+
+function stopScoring() {
+    socket.emit('stop_scoring_engine');
+}
+
 </script>
 {% endblock %}
 {% set active_page = "scoreboard" %}
@@ -53,7 +67,8 @@ $(function() {
             <td>Loading...</td>
         </tr>
     </table>
-    <form action="{{ url_for('start_scoring_engine') }}" method="post">
-        <p><input type="submit" value="Start Scoring" /></p>
-    </form>
+
+<input type="button" id='start' value="Start Scoring Process" onclick="startScoring()"/>
+<input type="button" id='stop' value="Terminate Process" onclick="stopScoring()"/>
+
 {% endblock %}

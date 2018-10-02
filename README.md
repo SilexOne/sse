@@ -2,14 +2,15 @@
 - url_for doesn't work in navigation_bar for base.html, also when using / on the backend of routes bootstrap stops working
 - Find a dynamic way to list nav links, Does nav link need active on current page?
 - Have a refresh on scoring engine variables from main.json
+- Calculate uptime
 - Display config page just like .json file
 - Use flask custom error pages
 - Proper logging, get rid of logging file
 - Logging to WEB UI
 - Display timer
-- Indicate end of scoring
+- Indicate end of scoring, leave stats up
 - Update scoreboard, scoreboard still there when db is gone
-- Once running gray out option, enable a terminate button
+- Once running gray out option, enable a terminate button (Temp for now, needs to persist after if browser is closed and reopened and must toggle after scoring engine has finished)
 - Pass the scoring_engine var through the routes?
 - Use a better database
 - cause errors then catch them
@@ -45,7 +46,7 @@ A python 3 program used to test various service uptimes for a given network infr
 ### Setup
 1. Git clone this repository:
     - `git clone https://github.com/SilexOne/sse.git`
-2. Go into the projecy
+2. Go into the project
     - `cd sse`
 3. Run the install script:
     - `./sse_setup.sh`

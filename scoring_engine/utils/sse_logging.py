@@ -13,7 +13,7 @@ if data.get('logging') not in ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']:
                   "\nERROR"
                   "\nCRITICAL")
     sys.exit(1)
-level = logging.getLevelName(data.get('logging'))
+level = logging.getLevelName(data.get('logging').upper())
 # TODO: Make dynamic
 file_handler = logging.FileHandler('scoring.log', mode='w')
 stdout_handler = logging.StreamHandler(sys.stdout)

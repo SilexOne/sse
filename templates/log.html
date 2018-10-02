@@ -4,16 +4,11 @@
 <script type="text/javascript" charset="utf-8">
 namespace = '/status';
 var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
-socket.on('connect', function() {
-     console.log('connected');
-});
-socket.on('test', function(data) {
-     $("#log").html(data);
-     console.log(data);
+socket.on('init', function(data) {
+     $("#log").html(data.replace(/\n/g, "<br>"));
 });
 socket.on('message', function(data) {
      $("#log").html(data.replace(/\n/g, "<br>"));
-     console.log(data);
 });
 </script>
 {% endblock %}
