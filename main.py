@@ -1,15 +1,17 @@
 import json
 import sqlite3
 import logging
+import markdown
 import multiprocessing as mp
 from os.path import abspath, dirname
 from threading import Lock
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from flatten_json import flatten_json, unflatten
-from flask import Flask, render_template, jsonify, request, redirect, url_for
+from flask import Flask, render_template, jsonify, request, redirect, url_for, Markup
 from flask_socketio import SocketIO, emit
-from settings import CONFIG_LOCATION, DATABASE_LOCATION, SCORING_LOG_LOCATION
+from settings import (CONFIG_LOCATION, DATABASE_LOCATION,
+                      SCORING_LOG_LOCATION, MARKDOWN_README_LOCATION)
 
 # Stop the flood of messages
 logging.getLogger("werkzeug").setLevel(logging.WARNING)
@@ -19,13 +21,21 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'securescoring'
 socketio = SocketIO(app)
 
+scorine_engine_running = False
+
 scoring_status_thread = None
 scoring_status_thread_lock = Lock()
 def scoring_status(scoring_process):
     is_alive = scoring_process.is_alive()
+    global scorine_engine_running
     while is_alive:
+        scorine_engine_running = True
         socketio.sleep(1)
         is_alive = scoring_process.is_alive()
+    scorine_engine_running = False
+    with scoring_status_thread_lock:
+        global scoring_status_thread
+        scoring_status_thread = None
 
 
 class Handler(FileSystemEventHandler):
@@ -83,7 +93,15 @@ def log():
 
 @app.route('/instructions')
 def instructions():
-    return render_template('instructions.html')
+    with open(MARKDOWN_README_LOCATION, 'r') as f:
+        content = f.read()
+    content = Markup(markdown.markdown(content))
+    return render_template('instructions.html', md=content)  # TODO: **locals()?
+
+
+@socketio.on('connect', namespace='/scoring')
+def index_connect():
+    pass
 
 
 @socketio.on('start_scoring_engine', namespace='/scoring')
@@ -92,23 +110,29 @@ def start_scoring_engine():
     global scoring_process
     scoring_process = mp.Process(target=scoring_engine_main.run_engine)
     scoring_process.start()
-    global scoring_status_thread
+
     with scoring_status_thread_lock:
+        global scoring_status_thread
         if scoring_status_thread is None:
             scoring_status_thread = socketio.start_background_task(scoring_status, scoring_process)
+            dir(scoring_status_thread)
 
 
 @socketio.on('stop_scoring_engine', namespace='/scoring')
 def stop_scoring_engine():
     try:
         scoring_process.terminate()
-        with scoring_status_thread_lock:
-            scoring_status_thread = None
         logging.info('Scoring Engine was forcibly terminated')
+
+        with scoring_status_thread_lock:
+            global scoring_status_thread
+            scoring_status_thread = None
+
     except NameError:
         logging.warning('No Scoring Engine Process found')
     except Exception:
         logging.exception('Scoring Engine was unable to be forcibly terminated')
+
 
 @socketio.on('connect', namespace='/status')
 def connect():

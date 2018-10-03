@@ -1,20 +1,17 @@
 #### TODO:
-- url_for doesn't work in navigation_bar for base.html, also when using / on the backend of routes bootstrap stops working
-- Find a dynamic way to list nav links, Does nav link need active on current page?
-- Have a refresh on scoring engine variables from main.json
+- url_for doesn't work in navigation_bar for base.html, also when using / on the backend of routes bootstrap stops working. Also is there a dynamic way to list nav links, Does nav link need active on current page?
 - Calculate uptime
 - Display config page just like .json file
 - Use flask custom error pages
 - Proper logging, get rid of logging file
-- Logging to WEB UI
 - Display timer
 - Indicate end of scoring, leave stats up
 - Update scoreboard, scoreboard still there when db is gone
-- Once running gray out option, enable a terminate button (Temp for now, needs to persist after if browser is closed and reopened and must toggle after scoring engine has finished)
-- Pass the scoring_engine var through the routes?
+- Once running gray out option, enable a terminate button
 - Use a better database
+- Update README.md with usage and add config page images
 - cause errors then catch them
-- Change main.json to config, also make it dynamic
+- Change main.json to config
  
 # Service Scoring Engine
 #### Table
@@ -34,12 +31,13 @@ A python 3 program used to test various service uptimes for a given network infr
 
 <a id="requirements"></a>
 ### Requirements
-- Create an Ubuntu 16.04LTS outside of the firewall. An example would be the `172.31.XX.0/29` subnet on the figure below.
-- Ensure the Ubuntu 16.04LTS has internet access.
-- Setup the SSE on a Ubuntu 16.04LTS system.
+1. Create an Ubuntu 16.04LTS outside of the firewall. An example would be the `172.31.XX.0/29` subnet on the figure below.
+2. Ensure the Ubuntu 16.04LTS has internet access.
+3. Setup the SSE on a Ubuntu 16.04LTS system.
+
 <figure>
-    <img src="static\2017Topology.png" style="border: 1px solid #000">
-    <figcaption><center>Southeast Regional Cyber Defense Qualification Network Infrastructure</center></figcaption>
+    <img src="static\images\2017Topology.png" style="border: 1px solid #000">
+    <figcaption>Southeast Regional Cyber Defense Qualification Network Infrastructure</figcaption>
 </figure>
 
 <a id="setup"></a>
@@ -65,48 +63,48 @@ A python 3 program used to test various service uptimes for a given network infr
     - `logging`: This sets the logging level for SSE and how verbose the output is. It follows Python logging standard.
     - `timeframe`: This sets how long SSE will score for
     - `services`: This will hold all the service settings that `scoring_engine/services` will use.
-    ```
-     {
-        "name": "testing",
-        "logging": "DEBUG",
-        "timeframe": {
-          "hours": "0",
-          "minutes": "1"
-        },
-        "services": {
-            ...
-     }
-    ```
+    
+             {
+                "name": "testing",
+                "logging": "DEBUG",
+                "timeframe": {
+                  "hours": "0",
+                  "minutes": "1"
+                },
+                "services": {
+                    ...
+             }
+    
     For example, logging is set at DEBUG and the test will only run for one minute. The `name` is just the title of the config itself. You can create other config files just like `main.json.example#`
 
 3. View and configure `services`:
     - `enabled`: Determines if the SSE will score that service
     - Other Settings: Specific configuration settings to test that `services` will use
-    ```
-    {
-    "name": "testing",
-    "logging": "DEBUG",
-    "timeframe": {
-      "hours": "0",
-      "minutes": "1"
-    },
-    "services": {
-      "dns": {
-        "enabled": "1",
-        "servers": {
-          "main": "8.8.8.8",
-          "secondary": "8.8.4.4"
-        },
-        "hostnames": {
-          "wcsc.usf.edu": "131.247.1.113",
-          "webcse.csee.usf.edu": "131.247.3.5"
-        }
-      },
-      "ad": {
-        "enabled": "0"
-      },
-    }
-    ```
+
+            {
+            "name": "testing",
+            "logging": "DEBUG",
+            "timeframe": {
+              "hours": "0",
+              "minutes": "1"
+            },
+            "services": {
+              "dns": {
+                "enabled": "1",
+                "servers": {
+                  "main": "8.8.8.8",
+                  "secondary": "8.8.4.4"
+                },
+                "hostnames": {
+                  "wcsc.usf.edu": "131.247.1.113",
+                  "webcse.csee.usf.edu": "131.247.3.5"
+                }
+              },
+              "ad": {
+                "enabled": "0"
+              },
+            }
+
     For example, `dns` is enabled and the service configuration to be tested is configured as `servers` and `hostnames`. You may take a look at `services/score_dns.py` and how it uses the configuration settings.
     `ad` is disabled and will not be tested.
 
@@ -114,119 +112,106 @@ A python 3 program used to test various service uptimes for a given network infr
 ### Contributing
 ##### Service Test
 If you want to test another service that isn't in SSE by default you can easily add one yourself.
-1. Within `scoring_engine/main.json` add a service in `services` with the appropriate settings in both modes.
-    ```
-    {
-        "name": "production",
-        "logging": "INFO",
-        "timeframe": {
-          ...
-        },
-        "services": {
-          "dns": {
-            ...
-          },
-    ----> "YOUR_SERVICE_NAME": {
-    ---->   "enabled": "1",
-    ---->   "SETTINGS_USED_IN_THE_PYTHON_FILE": "something"
-          },
-          ...
-        }
-    }
-    ```
 
+1. Within `scoring_engine/main.json` add a service in `services` with the appropriate settings in both modes.
+
+        {
+            "name": "production",
+            "logging": "INFO",
+            "timeframe": {
+              ...
+            },
+            "services": {
+              "dns": {
+                ...
+              },
+        ----> "YOUR_SERVICE_NAME": {
+        ---->   "enabled": "1",
+        ---->   "SETTINGS_USED_IN_THE_PYTHON_FILE": "something"
+              },
+              ...
+            }
+        }
+    
 2. Create a python file based off `scoring_engine/services/template.py` and store it in the `scoring_engine/services` folder.
-    - Follow the template guidelines
-    - Import the necessary libraries, `from utils.settings import data, collect`
-    - Ensure the decorator is on your function, `@collect(data.get('services').get('YOUR_SERVICE_NAME_YOU_CREATED_IN_THE_JSON_FILE').get('enabled'))`
-    - Use the settings from the json to test your service, This will be passed in as a parameter `def A_NAME_THAT_PERTAINS_TO_YOUR_SERVICE_TEST(config):`, then can be used as so `service_settings = config.get('services').get('YOUR_SERVICE_NAME_YOU_CREATED_IN_THE_JSON_FILE')`
-    - Return either a 1 or 0 which represent PASS/FAIL
+    - Follow the template
     - Look at existing scoring functions in `scoring_engine/services` to get real examples
     
 3. Run the program and the service should be added.
     
 ##### Github
+
 1.  Fork the project from github.
 2.  Git clone the repository.
 
-    ```bash
-    $ git clone git@github.com:<YOUR_USERNAME_FOR_GITHUB>/sse.git
-    ```
+        $ git clone git@github.com:<YOUR_USERNAME_FOR_GITHUB>/sse.git
  
 3.  Set the upstream repository.
 
-    ```bash
-    # Sets your git project upstream to this repository
-    $ git remote add upstream https://github.com/SilexOne/sse.git
-    ```
+        # Sets your git project upstream to this repository
+        $ git remote add upstream https://github.com/SilexOne/sse.git
 
 4. Ensure your fork's master mirrors the upstream repository. 
    That means you should not make any changes to your master, 
    all you need to create branches off it. You will also need to
    update your master when new changes occur in the overall project.
-   
-   ```bash
-   # Updates your master branch to be the same as the upstream repository
-   # Run this specific command everytime the upstream repository changes
-   $ git pull upstream master
-   
-   # Show which branch you are on
-   $ git branch
-   * master
 
-   # Create a new branch and use it
-   $ git checkout -b new-branch-your-creating
-   
-   # Verify you are using that new branch
-   $ git branch
-     master
-   * new-branch-your-creating
-
-   # Make changes and add to the project
-   
-   # Add and commit the new changes
-   $ git add .
-   $ git commit - m "your commit message"
-
-   # Push your branch to your github
-   $ git push origin new-branch-your-creating
-
-   # Go to github and do a pull request
-   # Then wait for it to be merged in or denied
-   ```
- 
- 4. How to merge your branch if you run into a merge conflict.
- 
-    ```bash
-    # Updates your master branch to be the same as the upstream repository
-    $ git pull upstream master
-   
-    # Your branch will rebase off the new master branch
-    $ git rebase master new-branch-your-creating
-    ```
+        # Updates your master branch to be the same as the upstream repository
+        # Run this specific command everytime the upstream repository changes
+        $ git pull upstream master
+       
+        # Show which branch you are on
+        $ git branch
+        * master
     
- 5. If your branch was merged in and you want to keep contributing.
+        # Create a new branch and use it
+        $ git checkout -b new-branch-your-creating
+       
+        # Verify you are using that new branch
+        $ git branch
+          master
+        * new-branch-your-creating
+    
+        # Make changes and add to the project
+       
+        # Add and commit the new changes
+        $ git add .
+        $ git commit - m "your commit message"
+    
+        # Push your branch to your github
+        $ git push origin new-branch-your-creating
+    
+        # Go to github and do a pull request
+        # Then wait for it to be merged in or denied
  
-    ```bash
-    # Updates your master branch to be the same as the upstream repository
-    $ git pull upstream master
-
-    # Switch back to master
-    $ git checkout master
-
-    # Verify you are on master
-    $ git branch
-    * master
-      new-branch-your-creating
-
-    # Branch off master
-    $ git checkout -b another-branch-you-created
-
-    # Verify you are on that branch
-    $ git branch
-      master
-      new-branch-your-creating
-    * another-branch-you-created
-
-    # Pretty much repeat step 3 with the changes and git add, and step 4 if applicable 
-    ```
+ 5. How to merge your branch if you run into a simple merge conflict.
+ 
+        # Updates your master branch to be the same as the upstream repository
+        $ git pull upstream master
+       
+        # Your branch will rebase off the new master branch
+        $ git rebase master new-branch-your-creating
+    
+ 6. If your branch was merged in and you want to keep contributing.
+ 
+        # Updates your master branch to be the same as the upstream repository
+        $ git pull upstream master
+    
+        # Switch back to master
+        $ git checkout master
+    
+        # Verify you are on master
+        $ git branch
+        * master
+          new-branch-your-creating
+    
+        # Branch off master
+        $ git checkout -b another-branch-you-created
+    
+        # Verify you are on that branch
+        $ git branch
+          master
+          new-branch-your-creating
+        * another-branch-you-created
+    
+        # Pretty much repeat step 4 with the changes and git add, and step 5 if applicable 

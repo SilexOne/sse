@@ -47,7 +47,8 @@ $(function() {
 namespace = '/scoring';
 var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
 socket.on('test', function(data) {
-     console.log(data);
+     $("#start").attr('disabled','disabled');
+     $("#Button2Id").removeAttr('disabled');
 });
 
 function startScoring() {

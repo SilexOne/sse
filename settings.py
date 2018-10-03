@@ -14,3 +14,4 @@ SCORING_ENGINE = 'scoring_engine_main.py'
 SCORING_ENGINE_LOCATION = join(CONFIG_DIR, SCORING_ENGINE)
 SCORING_LOG_NAME = 'scoring.log'
 SCORING_LOG_LOCATION = join(abspath(dirname(__file__)), SCORING_LOG_NAME)
+MARKDOWN_README_LOCATION = join(dirname(__file__), 'README.md')
