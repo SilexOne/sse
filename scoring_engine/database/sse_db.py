@@ -119,7 +119,3 @@ class SqliteDatabase:
     def close_db(self):
         self.connection.close()
         logging.info("{} connection was closed to {}".format(self.name, DATABASE_NAME))
-        try:
-            shutil.move(self.abs_path, self.new_abs_file_path)
-        except OSError:
-            pass

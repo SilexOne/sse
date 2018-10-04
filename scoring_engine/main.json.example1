@@ -2,12 +2,12 @@
   "name": "production",
   "logging": "INFO",
   "timeframe": {
-    "hours": "0",
-    "minutes": "1"
+    "hours": 3,
+    "minutes": 0
   },
   "services": {
     "dns": {
-      "enabled": "0",
+      "enabled": false,
       "servers": {
         "main": "172.20.240.23",
         "secondary": "172.20.241.27"
@@ -24,31 +24,31 @@
       }
     },
     "ad": {
-      "enabled": "0"
+      "enabled": false
     },
     "http": {
-      "enabled": "0"
+      "enabled": false
     },
     "https": {
-      "enabled": "0"
+      "enabled": false
     },
     "webmail-http": {
-      "enabled": "0"
+      "enabled": false
     },
     "smtp": {
-      "enabled": "0"
+      "enabled": false
     },
     "pop3": {
-      "enabled": "0"
+      "enabled": false
     },
     "imap": {
-      "enabled": "0"
+      "enabled": false
     },
     "ftp": {
-      "enabled": "0"
+      "enabled": false
     },
     "sql": {
-      "enabled": "0"
+      "enabled": false
     }
   }
 }

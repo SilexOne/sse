@@ -1,12 +1,46 @@
 {% extends "base.html" %}
 {% block title %}Configuration Settings{% endblock %}
 {% set active_page = "config" %}
+{% block additional_head %}
+<link href="{{ url_for('static', filename='jsoneditor-5.24.6/dist/jsoneditor.min.css') }}" rel="stylesheet">
+<script type="text/javascript" src="{{ url_for('static', filename='jsoneditor-5.24.6/dist/jsoneditor.min.js') }}"></script>
+{% endblock %}
 {% block content %}
-   <form action = "{{ url_for('read_config') }}" method = "POST">
-       {% for item in result -%}
-       <p>{{ ' '.join(item.name.split('_')) }}: <input type = "text" name = "{{ item.name }}" value="{{ item.value }}"/></p>
-       {%- endfor %}
-       <p><input type = "submit" value = "Submit" /></p>
+
+   <form action="{{ url_for('read_config') }}" method="POST" id="json-form">
+       <input type="hidden" id="json-return" name="json">
    </form>
+
+    <div id="jsoneditor"></div>
+    <br>
+    <button class="btn btn-success" id="submit-json">Submit</button>
+
+<script>
+  var json = {};
+  try {
+      json = JSON.parse({{ result|tojson }});
+  } catch(e) {
+      alert('Could not load json config\n\n' + e);
+  }
+  // create the editor
+  var container = document.getElementById('jsoneditor');
+  var options = {mode: "form"};
+  var editor = new JSONEditor(container, options, json);
+  editor.expandAll();
+
+
+  $('#submit-json').click(function() {
+    console.log(editor.get());
+    var val = editor.get();
+    if (typeof val !== 'string') {
+        val = JSON.stringify(val);
+    }
+    $('#json-return').val(val)
+    $('#json-form').submit();
+  });
+
+</script>
+
+
 {% endblock %}
 

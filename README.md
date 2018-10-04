@@ -1,11 +1,9 @@
 #### TODO:
 - url_for doesn't work in navigation_bar for base.html, also when using / on the backend of routes bootstrap stops working. Also is there a dynamic way to list nav links, Does nav link need active on current page?
-- Calculate uptime
-- Display config page just like .json file
 - Use flask custom error pages
 - Proper logging, get rid of logging file
 - Display timer
-- Indicate end of scoring, leave stats up
+- Indicate end of scoring
 - Update scoreboard, scoreboard still there when db is gone
 - Once running gray out option, enable a terminate button
 - Use a better database

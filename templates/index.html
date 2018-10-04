@@ -21,15 +21,19 @@ function drawResults(results) {
         }
         container.empty();
 
-        var ledClass = 'led led-' + (VALUE_TO_COLOR[value] || DEFAULT_COLOR);
+        var ledClass = 'led led-' + (VALUE_TO_COLOR[value.status] || DEFAULT_COLOR);
         container
             .append($('<td class="led-label"></td>').text(name + ': '))
-            .append($('<td/>').append($('<span/>').addClass(ledClass)));
+            .append($('<td/>').append($('<span/>').addClass(ledClass)))
+            .append($('<td/>').append(value.uptime));
+
+
+
     });
 }
 
 function getStatus() {
-    $.getJSON("/api/services/status", function(results) {
+    $.getJSON("/api/services/uptime", function(results) {
         if (firstRun) {
             firstRun = false;
             // Clear the loading text
@@ -63,13 +67,24 @@ function stopScoring() {
 {% endblock %}
 {% set active_page = "scoreboard" %}
 {% block content %}
-    <table id="scoreboard">
-        <tr>
-            <td>Loading...</td>
-        </tr>
-    </table>
 
-<input type="button" id='start' value="Start Scoring Process" onclick="startScoring()"/>
-<input type="button" id='stop' value="Terminate Process" onclick="stopScoring()"/>
+
+<table class="table">
+  <thead class="thead-dark">
+    <tr>
+      <th scope="col">Service</th>
+      <th scope="col">Status</th>
+      <th scope="col">Uptime</th>
+    </tr>
+  </thead>
+  <tbody id="scoreboard">
+      <tr>
+          <td>Loading...</td>
+      </tr>
+  </tbody>
+</table>
+
+<input type="button" class="btn btn-success" id='start' value="Start Scoring Process" onclick="startScoring()"/>
+<input type="button" class="btn btn-danger" id='stop' value="Terminate Process" onclick="stopScoring()"/>
 
 {% endblock %}

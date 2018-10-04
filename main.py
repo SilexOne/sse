@@ -1,5 +1,6 @@
 import json
 import sqlite3
+import collections
 import logging
 import markdown
 import multiprocessing as mp
@@ -7,7 +8,6 @@ from os.path import abspath, dirname
 from threading import Lock
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-from flatten_json import flatten_json, unflatten
 from flask import Flask, render_template, jsonify, request, redirect, url_for, Markup
 from flask_socketio import SocketIO, emit
 from settings import (CONFIG_LOCATION, DATABASE_LOCATION,
@@ -74,13 +74,7 @@ def scoreboard():
 def config_display():
     try:
         with open(CONFIG_LOCATION, 'r') as f:
-            config = json.load(f)
-    except Exception as e:
-        return render_template('error.html', error=e)
-    try:
-        flat_json = [{'name': k, 'value': v} for k, v in flatten_json(config).items()]
-        sorted_flat_json = sorted(flat_json, key=lambda k: k['name'])
-        config = sorted_flat_json
+            config = f.read()
     except Exception as e:
         return render_template('error.html', error=e)
     return render_template('config.html', result=config)
@@ -115,7 +109,6 @@ def start_scoring_engine():
         global scoring_status_thread
         if scoring_status_thread is None:
             scoring_status_thread = socketio.start_background_task(scoring_status, scoring_process)
-            dir(scoring_status_thread)
 
 
 @socketio.on('stop_scoring_engine', namespace='/scoring')
@@ -158,11 +151,12 @@ def read_config():
             return render_template('error.html', error=e)
         return jsonify(config)
     elif request.method == 'POST':
-        result = request.form
-        result = unflatten(result)
         try:
             with open(CONFIG_LOCATION, 'w') as f:
-                json.dump(result, f, indent=4)
+                json.dump(
+                    json.loads(request.form['json'], object_pairs_hook=collections.OrderedDict),
+                    f,
+                    indent=4)
         except Exception as e:
             return render_template('error.html', error=e)
 
@@ -183,6 +177,52 @@ def score_board():
                 last_entry_response = cursor.fetchone()
                 last_entry_status = last_entry_response[2]
                 services_last_status[table_name] = last_entry_status
+            return jsonify(services_last_status)
+        except Exception as e:
+            return render_template('error.html', error=e)
+
+
+@app.route('/api/services/uptime')
+def uptime():
+    services_last_status = {}
+    with sqlite3.connect(DATABASE_LOCATION) as connection:
+        try:
+            cursor = connection.cursor()
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+            table_name_response = cursor.fetchall()
+            for table in table_name_response:
+                table_name = table[0]
+                cursor.execute("SELECT * FROM {}".format(table_name))
+
+                # Get the current status
+                response = cursor.fetchall()
+                last_entry_status = response[-1][2]
+
+                # Get the total time the scoring engine was running
+                if len(response) >= 2:
+                    start_time = int(response[0][1])
+                    stop_time = int(response[-1][1])
+                    total_time = stop_time - start_time
+
+                    # Get the uptime
+                    total_downtime = 0
+                    base = None
+                    for result in response:
+                        if base is not None:
+                            total_downtime += result[1] - base
+                            base = None
+                        if result[2] == 0:
+                            base = result[1]
+                    uptime = 100 - (float(total_downtime)/total_time) * 100
+                else:
+                    if response[0][2] == 1:
+                        uptime = 100
+                    else:
+                        uptime = 0
+                services_last_status[table_name] = {
+                    'status': last_entry_status,
+                    'uptime':"{:.2f}%".format(uptime)
+                }
             return jsonify(services_last_status)
         except Exception as e:
             return render_template('error.html', error=e)

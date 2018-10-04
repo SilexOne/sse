@@ -2,12 +2,12 @@
   "name": "Testing",
   "logging": "DEBUG",
   "timeframe": {
-    "hours": "0",
-    "minutes": "1"
+    "hours": 0,
+    "minutes": 1
   },
   "services": {
     "dns": {
-      "enabled": "1",
+      "enabled": true,
       "servers": {
         "main": "8.8.8.8",
         "secondary": "8.8.4.4"
@@ -18,7 +18,7 @@
       }
     },
     "random": {
-      "enabled": "1"
+      "enabled": true
     }
   }
 }

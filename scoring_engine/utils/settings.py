@@ -14,11 +14,11 @@ data = json.load(open(os.path.join(os.path.dirname(os.path.dirname(__file__)), C
 # function can be added to the global variable
 def collect(enabled):
     def real_decorator(func):
-        if not(enabled == '0' or enabled == '1'):
+        if not(enabled == True or enabled == False):
             logging.exception("The decorator argument on {} service function must "
-                              "be either a '1' or '0', check the JSON configuration "
-                              "file to ensure that it\'s correct".format(func.__name__))
+                              "be either a 'true' or 'false', check the JSON configuration "
+                              "file to ensure that it's correct".format(func.__name__))
             sys.exit(1)
-        if enabled == '1':
+        if enabled == True:
             scoring.append(func)
     return real_decorator
